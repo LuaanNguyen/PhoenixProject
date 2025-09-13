@@ -41,9 +41,9 @@ export default function Sidebar() {
   }, [filteredPoints]);
 
   return (
-    <div className="w-80 h-full bg-white  border-r-4 border-gray-200 flex flex-col">
+    <div className="w-80 h-full bg-white border-r border-gray-200 flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-gray-100 bg-orange-100">
+      <div className="p-6 border-b border-gray-100">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -72,7 +72,7 @@ export default function Sidebar() {
         {/* Live Data */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-bold text-gray-900">Live Updates</h3>
+            <h3 className="text-sm font-medium text-gray-900">Live Updates</h3>
             <p className="text-xs text-gray-500 mt-1">
               {live ? "Streaming data" : "Updates paused"}
             </p>
@@ -124,7 +124,7 @@ export default function Sidebar() {
 
         {/* Statistics */}
         <div>
-          <h3 className="text-sm font-bold text-gray-900 mb-3">Statistics</h3>
+          <h3 className="text-sm font-medium text-gray-900 mb-3">Statistics</h3>
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Active Sensors</span>
@@ -197,7 +197,7 @@ export default function Sidebar() {
 
         {/* View Mode */}
         <div>
-          <h3 className="text-sm font-bold text-gray-900 mb-3">View Mode</h3>
+          <h3 className="text-sm font-medium text-gray-900 mb-3">View Mode</h3>
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => actions.setLayerMode("heatmap")}
