@@ -41,9 +41,9 @@ export default function Sidebar() {
   }, [filteredPoints]);
 
   return (
-    <div className="w-80 h-full bg-white border-r border-gray-200 flex flex-col">
+    <div className="w-80 h-full bg-white  border-r-4 border-gray-200 flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-gray-100">
+      <div className="p-6 border-b border-gray-100 bg-orange-100">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -69,37 +69,10 @@ export default function Sidebar() {
 
       {/* Controls */}
       <div className="p-6 space-y-6 flex-1 overflow-y-auto">
-        {/* View Mode */}
-        <div>
-          <h3 className="text-sm font-medium text-gray-900 mb-3">View Mode</h3>
-          <div className="flex bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => actions.setLayerMode("heatmap")}
-              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
-                layerMode === "heatmap"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              Heatmap
-            </button>
-            <button
-              onClick={() => actions.setLayerMode("scatter")}
-              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
-                layerMode === "scatter"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              Points
-            </button>
-          </div>
-        </div>
-
         {/* Live Data */}
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-medium text-gray-900">Live Updates</h3>
+            <h3 className="text-sm font-bold text-gray-900">Live Updates</h3>
             <p className="text-xs text-gray-500 mt-1">
               {live ? "Streaming data" : "Updates paused"}
             </p>
@@ -151,7 +124,7 @@ export default function Sidebar() {
 
         {/* Statistics */}
         <div>
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Statistics</h3>
+          <h3 className="text-sm font-bold text-gray-900 mb-3">Statistics</h3>
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Active Sensors</span>
@@ -222,28 +195,30 @@ export default function Sidebar() {
           </div>
         )}
 
-        {/* AQI Legend */}
+        {/* View Mode */}
         <div>
-          <h3 className="text-sm font-medium text-gray-900 mb-3">AQI Legend</h3>
-          <div className="space-y-2">
-            {AQI_BANDS.map((band, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <div
-                  className="w-4 h-4 rounded-sm"
-                  style={{ backgroundColor: band.color }}
-                />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">
-                    {band.label}
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    {band.min === 0 ? "≤" : ""}
-                    {band.min}
-                    {band.max === Infinity ? "+" : `–${band.max}`} μg/m³
-                  </div>
-                </div>
-              </div>
-            ))}
+          <h3 className="text-sm font-bold text-gray-900 mb-3">View Mode</h3>
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => actions.setLayerMode("heatmap")}
+              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                layerMode === "heatmap"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Heatmap
+            </button>
+            <button
+              onClick={() => actions.setLayerMode("scatter")}
+              className={`flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors ${
+                layerMode === "scatter"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              Points
+            </button>
           </div>
         </div>
       </div>

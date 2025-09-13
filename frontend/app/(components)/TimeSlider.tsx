@@ -6,7 +6,7 @@ export default function TimeSlider() {
   const { timeWindowMin, actions } = useStore();
 
   return (
-    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10 bg-white rounded-lg px-3 py-2 shadow-lg border">
+    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-10 bg-white rounded-lg px-3 py-2 shadow-lg">
       <div className="flex items-center gap-3">
         <span className="text-sm text-gray-600">Time:</span>
         <input

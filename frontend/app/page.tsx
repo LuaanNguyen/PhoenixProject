@@ -9,6 +9,7 @@ import TimeSlider from "./(components)/TimeSlider";
 import StatusIndicator from "./(components)/StatusIndicator";
 import LoadingScreen from "./(components)/LoadingScreen";
 import NotificationSystem from "./(components)/NotificationSystem";
+import AQILegend from "./(components)/AQILegend";
 import { generateRandomSensorBatch } from "./(lib)/sim";
 
 // Dynamically import the map component to avoid SSR issues
@@ -43,6 +44,7 @@ export default function Home() {
         <StatusIndicator />
         <ZoomControls />
         <TimeSlider />
+        <AQILegend />
       </div>
 
       {/* Global Notifications */}
