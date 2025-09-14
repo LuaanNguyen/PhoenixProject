@@ -19,8 +19,8 @@ export const metadata: Metadata = {
   },
   description:
     "Live Arduino wildfire sensor network with real‑time map, AI decisions, and analytics.",
-  applicationName: "FireGuard AI",
-  authors: [{ name: "FireGuard Team" }],
+  applicationName: "Phoenix Project",
+  authors: [{ name: "Phoenix Project Team" }],
   keywords: [
     "wildfire",
     "sensors",
@@ -40,17 +40,17 @@ export const metadata: Metadata = {
   colorScheme: "light",
   manifest: "/site.webmanifest",
   openGraph: {
-    title: "FireGuard AI — Real‑Time Wildfire Sensor Map",
+    title: "Phoenix Project — Real‑Time Wildfire Sensor Map",
     description:
       "Live wildfire risk visualization with sensor telemetry, AI judge and analytics.",
     url: "https://your-domain.example",
-    siteName: "FireGuard AI",
+    siteName: "Phoenix Project",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "FireGuard AI Dashboard",
+        alt: "Phoenix Project Dashboard",
       },
     ],
     locale: "en_US",
@@ -58,11 +58,11 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "FireGuard AI — Real‑Time Wildfire Sensor Map",
+    title: "Phoenix Project — Real‑Time Wildfire Sensor Map",
     description:
       "Live wildfire risk visualization with sensor telemetry, AI judge and analytics.",
     images: ["/og-image.png"],
-    creator: "@fireguard",
+    creator: "@phoenix_project",
   },
   metadataBase: new URL("https://your-domain.example"),
 };

@@ -1,4 +1,11 @@
-"use client";
+import { redirect } from "next/navigation";
+
+export default function Home() {
+  // Redirect the root path to the /simple app
+  redirect("/simple");
+}
+
+("use client");
 
 import React, { useEffect } from "react";
 import dynamic from "next/dynamic";

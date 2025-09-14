@@ -2,7 +2,7 @@
 
 Live Arduino wildfire sensor network with real‑time map, AI decisions, and analytics.
 
-![FlamDirect Map Screenshot](screenshot-placeholder.png)
+![FlamDirect Map Screenshot](final_demo.jpg)
 
 ### Stacks
 
