@@ -6,7 +6,7 @@ import DeckGL from "@deck.gl/react";
 import type { PickingInfo } from "@deck.gl/core";
 import { useStore } from "../(lib)/store";
 import { ViewState } from "../(types)/sensor";
-import { createFireLayers, getFireTooltip } from "./FireLayers";
+import { createFireLayers, getFireTooltip, TooltipObject } from "./FireLayers";
 
 // Simplified map style for better performance
 const MAPLIBRE_STYLE = {
@@ -63,7 +63,9 @@ export default function SmartConeMap() {
 
   // DeckGL expects a PickingInfo signature -> TooltipContent
   const deckTooltip = (info: PickingInfo) => {
-    return getFireTooltip({ object: (info.object as any) ?? null });
+    return getFireTooltip({
+      object: (info.object as TooltipObject | null) ?? null,
+    });
   };
 
   return (

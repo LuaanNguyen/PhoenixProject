@@ -14,7 +14,7 @@ type Hotspot = {
   risk_level: string;
 };
 
-interface TooltipObject {
+export interface TooltipObject {
   id?: string;
   temperature?: number;
   pm25?: number;
