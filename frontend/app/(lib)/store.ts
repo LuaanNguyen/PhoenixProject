@@ -359,9 +359,21 @@ export const useStore = create<StoreState>((set, get) => {
           get().actions.addPoints(message.sensors);
 
           // Update fire spread analysis
+          // Normalize snake_case payload to camelCase store shape
           set({
             fireSpread: message.spread_analysis,
-            fireStatistics: message.statistics,
+            fireStatistics: {
+              activeSensors: message.statistics.active_sensors,
+              totalSensors: message.statistics.total_sensors,
+              maxTemperature: message.statistics.max_temperature,
+              avgTemperature: message.statistics.avg_temperature,
+              affectedAreaM2: message.statistics.affected_area_m2,
+              spreadRateM2PerStep: message.statistics.spread_rate_m2_per_step,
+              fireCenter: [
+                message.statistics.fire_center?.[0] ?? 0,
+                message.statistics.fire_center?.[1] ?? 0,
+              ],
+            },
             temperatureHotspots: message.spread_analysis.hotspots,
           });
 
