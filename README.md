@@ -1,4 +1,4 @@
-# FlamDirect
+# Phoenix Project
 
 Live Arduino wildfire sensor network with real‑time map, AI decisions, and analytics.
 
