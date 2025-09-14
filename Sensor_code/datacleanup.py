@@ -2,7 +2,7 @@ import csv
 
 def clean_csv(input_file, output_file, tol=0.5):
     cleaned_rows = []
-    force_300 = False  # flag: once triggered, all temps = 300C
+    force_300 = False  # once triggered, all temps = 300C
     last_celsius = None
 
     with open(input_file, "r", newline="") as f:
@@ -27,7 +27,7 @@ def clean_csv(input_file, output_file, tol=0.5):
 
                 # Check for error code
                 if celsius == -1000 or fahrenheit == -1000:
-                    # Case 1: last was >120C then error -> trigger 300C mode
+                    # Trigger 300C mode if previous valid reading was >120C
                     if last_celsius is not None and last_celsius > 120:
                         force_300 = True
                     # Skip this error row itself
