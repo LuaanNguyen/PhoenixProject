@@ -277,4 +277,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ for HackMIT 2024**
+**Built with ❤️ for HackMIT 2025**
