@@ -231,9 +231,9 @@ export default function SimpleFireMap() {
     <div className="relative w-full h-full">
       <DeckGL
         initialViewState={{
-          longitude: -120.424,
-          latitude: 38.79,
-          zoom: 11.5,
+          longitude: -118.15,
+          latitude: 34.25,
+          zoom: 12,
           pitch: 0,
           bearing: 0,
         }}
@@ -291,7 +291,9 @@ export default function SimpleFireMap() {
           </div>
           <div className="flex items-center justify-between text-xs">
             <span className="text-gray-500">Coverage Area</span>
-            <span className="font-semibold text-gray-700">10.2 × 13.1 km</span>
+            <span className="font-semibold text-gray-700">
+              Angeles National Forest
+            </span>
           </div>
         </div>
       </div>

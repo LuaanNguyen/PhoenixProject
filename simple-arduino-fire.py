@@ -20,18 +20,18 @@ from datetime import datetime
 # Arduino sensor network naturally distributed in forest area (~80 sensors)
 FOREST_SENSORS = []
 
-# Define forest zones with much wider spacing - spread across ~10km forest area
+# Define forest zones in Angeles National Forest - Dense green forest, highly fire-prone, NO OCEAN
 forest_zones = [
-    # Dense forest core (higher sensor density) - North
-    {'center_lat': 38.8100, 'center_lon': -120.4000, 'radius': 0.025, 'sensor_count': 20, 'zone': 'dense_forest'},
-    # Medium density forest (medium sensor density) - East
-    {'center_lat': 38.7900, 'center_lon': -120.3700, 'radius': 0.030, 'sensor_count': 15, 'zone': 'medium_forest'},
-    # Sparse forest edges (lower sensor density) - South
-    {'center_lat': 38.7600, 'center_lon': -120.4200, 'radius': 0.035, 'sensor_count': 12, 'zone': 'sparse_forest'},
-    # Ridgeline sensors (strategic placement) - West
-    {'center_lat': 38.7900, 'center_lon': -120.4800, 'radius': 0.028, 'sensor_count': 10, 'zone': 'ridgeline'},
-    # Valley sensors (water sources) - Center
-    {'center_lat': 38.7900, 'center_lon': -120.4240, 'radius': 0.020, 'sensor_count': 8, 'zone': 'valley'},
+    # Angeles National Forest (dense pine/oak forest) - North
+    {'center_lat': 34.3000, 'center_lon': -118.1200, 'radius': 0.025, 'sensor_count': 20, 'zone': 'angeles_forest'},
+    # San Gabriel Mountains (mixed conifer) - Northeast  
+    {'center_lat': 34.2800, 'center_lon': -118.0800, 'radius': 0.030, 'sensor_count': 15, 'zone': 'san_gabriel_mtns'},
+    # Altadena foothills (chaparral/oak woodland) - South
+    {'center_lat': 34.2200, 'center_lon': -118.1400, 'radius': 0.022, 'sensor_count': 12, 'zone': 'altadena_foothills'},
+    # La Cañada Flintridge (fire-prone canyon) - West
+    {'center_lat': 34.2400, 'center_lon': -118.1800, 'radius': 0.020, 'sensor_count': 10, 'zone': 'la_canada_canyon'},
+    # Pasadena watershed (riparian forest) - Southeast
+    {'center_lat': 34.2100, 'center_lon': -118.1100, 'radius': 0.018, 'sensor_count': 8, 'zone': 'pasadena_watershed'},
 ]
 
 sensor_id = 1
@@ -267,8 +267,8 @@ async def handle_client(websocket):
 
 async def main():
     print("🚀 Starting Simple Arduino Fire Detection System")
-    print(f"🌲 {len(FOREST_SENSORS)} Arduino sensors spread across ~10km forest area")
-    print("🌲 Zones: Dense Forest (N), Medium Forest (E), Sparse Forest (S), Ridgeline (W), Valley (Center)")
+    print(f"🌲 {len(FOREST_SENSORS)} Arduino sensors spread across Angeles National Forest")
+    print("🌲 Zones: Angeles Forest (N), San Gabriel Mtns (NE), Altadena Foothills (S), La Cañada Canyon (W), Pasadena Watershed (SE)")
     print("📏 Minimum 500m spacing between sensors to prevent overlap")
     print("🔥 Click on map to start fires and watch sensors detect them!")
     print("🌐 WebSocket server: ws://localhost:8766")

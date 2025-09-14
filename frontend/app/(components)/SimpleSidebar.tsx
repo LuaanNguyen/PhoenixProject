@@ -52,11 +52,11 @@ export default function SimpleSidebar() {
             <div className="text-xs mb-2 uppercase tracking-wider font-medium">
               Deployment Zone
             </div>
-            <div className="text-sm font-semibol">
-              Eldorado National Forest, CA
+            <div className="text-sm font-semibold">
+              Angeles National Forest, CA
             </div>
             <div className="text-xs text-gray-400 mt-1">
-              65 sensors • 133.6 km² coverage
+              65 sensors • Dense forest coverage
             </div>
           </div>
         </div>
