@@ -122,7 +122,7 @@ export default function SimpleFireMap() {
 
   // Simple Compass component
   const Compass = () => (
-    <div className="absolute bottom-4 left-4 bg-white border border-gray-200 rounded p-3 shadow-lg">
+    <div className="absolute bottom-3 left-3 bg-white border border-gray-200 rounded p-3 shadow-lg">
       <div className="flex items-center gap-3">
         <div className="relative w-10 h-10">
           {/* Compass circle */}
@@ -250,59 +250,10 @@ export default function SimpleFireMap() {
         />
       </DeckGL>
 
-      {/* Enhanced Instructions Panel */}
-      <div className="absolute top-6 left-6 bg-white/95 backdrop-blur-sm border border-gray-200/50 p-5 rounded-xl shadow-lg text-sm max-w-sm">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
-            <svg
-              className="w-4 h-4 text-blue-600"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-          <div className="font-semibold text-gray-900">
-            Fire Detection System
-          </div>
-        </div>
-        <div className="text-gray-600 text-xs space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-            <span>Click anywhere to simulate fire</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-            <span>Watch real-time sensor response</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
-            <span>AI analyzes temperature patterns</span>
-          </div>
-        </div>
-      </div>
-
       {/* Enhanced Legend */}
-      <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm border border-gray-200/50 p-5 rounded-xl shadow-lg text-sm min-w-[200px]">
+      <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm border border-gray-200/50 p-3 rounded-md shadow-lg text-sm min-w-[200px]">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <svg
-              className="w-3 h-3 text-white"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-          <span className="font-semibold text-gray-900">Sensor Legend</span>
+          <span className="font-semibold text-gray-900">Sensor Levels</span>
         </div>
         <div className="space-y-3 mb-4">
           <div className="flex items-center justify-between p-2 bg-red-50 rounded-lg">
@@ -347,7 +298,7 @@ export default function SimpleFireMap() {
 
       {/* Enhanced AI Judge Live Decision */}
       {filteredPoints.some((p) => p.temperature && p.temperature > 30) && (
-        <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-sm border border-gray-200/50 p-5 rounded-xl shadow-lg text-sm max-w-xs">
+        <div className="absolute bottom-3 right-3 bg-white/95 backdrop-blur-sm border border-gray-200/50 p-5 rounded-md shadow-lg text-sm max-w-xs">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-600 rounded-lg flex items-center justify-center">
               <svg
@@ -363,7 +314,7 @@ export default function SimpleFireMap() {
               </svg>
             </div>
             <div className="font-semibold text-gray-900">
-              AI Emergency Response
+              Emergency Response
             </div>
           </div>
 
@@ -384,7 +335,7 @@ export default function SimpleFireMap() {
                     ).length >= 3
                   ? "2"
                   : "1"}{" "}
-                RESPONSE REQUIRED
+                REQUIRED
               </div>
               <div className="text-xs text-red-600">
                 {filteredPoints.filter(
