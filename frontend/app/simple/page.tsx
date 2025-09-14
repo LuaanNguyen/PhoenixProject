@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useStore } from "../(lib)/store";
 import SimpleSidebar from "../(components)/SimpleSidebar";
+import RightSidebar from "../(components)/RightSidebar";
 
 // Dynamic import to prevent SSR issues
 const SimpleFireMap = dynamic(() => import("../(components)/SimpleFireMap"), {
@@ -33,14 +34,17 @@ export default function SimpleFirePage() {
   }, [actions]);
 
   return (
-    <main className="flex h-screen bg-white overflow-hidden">
-      {/* Sidebar */}
+    <main className="flex h-screen bg-gray-50 overflow-hidden">
+      {/* Left Sidebar */}
       <SimpleSidebar />
 
       {/* Map Container */}
       <div className="flex-1 relative">
         <SimpleFireMap />
       </div>
+
+      {/* Right Sidebar */}
+      <RightSidebar />
     </main>
   );
 }

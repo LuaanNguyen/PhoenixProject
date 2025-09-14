@@ -1,22 +1,29 @@
 import numpy as np
+import json
+import time
+from datetime import datetime, timedelta
 
 """
-Wildfire Cellular Automata Model (Headless)
--------------------------------------------
-- Each cell represents a 30x30 meter patch of land.
-- Cells can be empty, vegetated, burning, or ash.
-- Fire spreads based on wind, slope, and fuel type.
-- Elevation is modeled as a diagonal valley.
-- Wind changes smoothly over time and space.
-- All simulation data is stored for later access.
+Arduino Sensor Network Fire Simulation
+--------------------------------------
+- Each cell represents a 30x30 meter patch with an Arduino temperature sensor
+- 64x64 grid = 4,096 virtual Arduino sensors across forest area
+- Sensors report temperature, fire state, and environmental data
+- Real-time fire spread analysis and prediction
+- WebSocket integration for frontend visualization
 """
 
 # --- Model Parameters ---
-size = 64
-ignite_prob = 0.3
-burn_time = 5
-steps = 200
-n_updates = 16
+size = 64              # 64x64 grid = 4,096 Arduino sensors
+ignite_prob = 0.3      # Base ignition probability
+burn_time = 5          # Steps a cell burns before turning to ash
+steps = 300            # Extended simulation steps for longer analysis
+n_updates = 24         # More random fire ignition events
+
+# --- Sensor Network Configuration ---
+CELL_SIZE_METERS = 30  # Each cell = 30x30 meter area
+BASE_LAT = 38.7891     # Eldorado National Forest base latitude
+BASE_LON = -120.4234   # Eldorado National Forest base longitude
 
 # --- Cell States ---
 EMPTY = 0
@@ -39,6 +46,11 @@ class FireSimData:
         self.burn_timers = []
         self.wind_fields = []
         self.temperatures = []
+        
+        # Arduino sensor network data
+        self.sensors = self._generate_sensor_network()
+        self.fire_events = []  # Track fire ignition events
+        self.spread_history = []  # Track fire spread over time
 
     def _gen_update_stream(self):
         for i in range(n_updates):
@@ -163,8 +175,170 @@ class FireSimData:
             self.burn_timers.append(burn_timer_sim.copy())
             self.wind_fields.append(wind_sim.copy())
             self.temperatures.append(temp.copy())
+            
+            # Track fire spread metrics
+            spread_data = self._calculate_spread_metrics(step, grid_sim, temp)
+            self.spread_history.append(spread_data)
+
+    def _generate_sensor_network(self):
+        """Generate Arduino sensor network across the grid"""
+        sensors = {}
+        for i in range(size):
+            for j in range(size):
+                # Convert grid position to lat/lon
+                lat = BASE_LAT + (i * CELL_SIZE_METERS / 111000)  # ~111km per degree
+                lon = BASE_LON + (j * CELL_SIZE_METERS / 111000)
+                
+                sensor_id = f"ARDUINO_{i:02d}_{j:02d}"
+                sensors[sensor_id] = {
+                    'id': sensor_id,
+                    'lat': lat,
+                    'lon': lon,
+                    'grid_i': i,
+                    'grid_j': j,
+                    'elevation': 0,  # Will be set during initialization
+                    'fuel_type': 0,  # Will be set during initialization
+                    'battery_level': np.random.uniform(85, 100),  # Random battery level
+                    'last_maintenance': datetime.now() - timedelta(days=np.random.randint(1, 30))
+                }
+        return sensors
+
+    def _calculate_spread_metrics(self, step, grid, temperature):
+        """Calculate fire spread metrics for current step"""
+        burning_cells = np.sum(grid == BURNING)
+        ash_cells = np.sum(grid == ASH)
+        total_affected = burning_cells + ash_cells
+        
+        # Calculate center of fire mass for direction analysis
+        fire_coords = np.where(grid == BURNING)
+        if len(fire_coords[0]) > 0:
+            center_i = np.mean(fire_coords[0])
+            center_j = np.mean(fire_coords[1])
+        else:
+            center_i, center_j = size//2, size//2
+        
+        # Calculate spread rate (area per step)
+        if step > 0 and hasattr(self, 'prev_affected'):
+            spread_rate = (total_affected - self.prev_affected) * CELL_SIZE_METERS * CELL_SIZE_METERS
+        else:
+            spread_rate = 0
+        
+        self.prev_affected = total_affected
+        
+        return {
+            'step': step,
+            'burning_cells': int(burning_cells),
+            'ash_cells': int(ash_cells),
+            'total_affected_area': int(total_affected * CELL_SIZE_METERS * CELL_SIZE_METERS),  # m²
+            'spread_rate': float(spread_rate),  # m²/step
+            'fire_center': [float(center_i), float(center_j)],
+            'max_temperature': float(np.max(temperature)),
+            'avg_temperature': float(np.mean(temperature)),
+            'hotspots': self._find_hotspots(temperature, grid),
+            'wind_direction': float(np.mean(self.wind_speed[:, :, 1])),
+            'wind_speed': float(np.mean(self.wind_speed[:, :, 0]))
+        }
+
+    def _find_hotspots(self, temperature, grid, threshold=100):
+        """Find temperature hotspots for emergency response"""
+        hotspots = []
+        for i in range(size):
+            for j in range(size):
+                if temperature[i, j] > threshold:
+                    sensor_id = f"ARDUINO_{i:02d}_{j:02d}"
+                    lat = BASE_LAT + (i * CELL_SIZE_METERS / 111000)
+                    lon = BASE_LON + (j * CELL_SIZE_METERS / 111000)
+                    
+                    hotspots.append({
+                        'sensor_id': sensor_id,
+                        'lat': lat,
+                        'lon': lon,
+                        'temperature': float(temperature[i, j]),
+                        'state': int(grid[i, j]),
+                        'risk_level': self._calculate_risk_level(temperature[i, j])
+                    })
+        
+        # Sort by temperature (hottest first)
+        hotspots.sort(key=lambda x: x['temperature'], reverse=True)
+        return hotspots[:20]  # Top 20 hotspots
+
+    def _calculate_risk_level(self, temp):
+        """Calculate fire risk level based on temperature"""
+        if temp < 30:
+            return "LOW"
+        elif temp < 60:
+            return "MODERATE" 
+        elif temp < 100:
+            return "HIGH"
+        elif temp < 300:
+            return "CRITICAL"
+        else:
+            return "EXTREME"
+
+    def get_sensor_data_for_step(self, step):
+        """Get Arduino sensor data for a specific simulation step"""
+        if step >= len(self.grids):
+            return []
+        
+        grid = self.grids[step]
+        temperature = self.temperatures[step]
+        wind_field = self.wind_fields[step]
+        
+        sensor_data = []
+        for sensor_id, sensor in self.sensors.items():
+            i, j = sensor['grid_i'], sensor['grid_j']
+            
+            # Convert temperature to PM2.5 equivalent for visualization
+            pm25 = self._temp_to_pm25(temperature[i, j])
+            
+            sensor_reading = {
+                'id': sensor_id,
+                'lat': sensor['lat'],
+                'lon': sensor['lon'],
+                'temperature': float(temperature[i, j]),
+                'pm25': float(pm25),
+                'state': int(grid[i, j]),
+                'wind_speed': float(wind_field[i, j, 0]),
+                'wind_direction': float(wind_field[i, j, 1]),
+                'battery_level': sensor['battery_level'],
+                'timestamp': datetime.now().isoformat(),
+                'ts': int(time.time() * 1000),  # For frontend compatibility
+                'risk_level': self._calculate_risk_level(temperature[i, j])
+            }
+            
+            # Only include sensors with interesting data (not all ambient temperature)
+            if temperature[i, j] > 25 or grid[i, j] != VEG:
+                sensor_data.append(sensor_reading)
+        
+        return sensor_data
+
+    def _temp_to_pm25(self, temp):
+        """Convert temperature to PM2.5 equivalent for visualization"""
+        if temp <= 25:
+            return 0
+        elif temp <= 50:
+            return (temp - 25) * 1.4  # 0-35 range (Good)
+        elif temp <= 100:
+            return 35 + (temp - 50) * 0.8  # 35-75 range (Moderate)
+        elif temp <= 300:
+            return 75 + (temp - 100) * 0.375  # 75-150 range (Unhealthy)
+        else:
+            return 150 + (temp - 300) * 0.1  # 150+ range (Hazardous)
+
+    def get_fire_progression_data(self):
+        """Get complete fire progression data for frontend"""
+        return {
+            'total_steps': len(self.grids),
+            'grid_size': size,
+            'cell_size_meters': CELL_SIZE_METERS,
+            'base_coordinates': {'lat': BASE_LAT, 'lon': BASE_LON},
+            'spread_history': self.spread_history,
+            'sensor_count': len(self.sensors),
+            'simulation_area_km2': (size * CELL_SIZE_METERS / 1000) ** 2
+        }
 
 # Usage:
 # sim_data = FireSimData()
 # sim_data.run()
-# Access sim_data.grids, sim_data.burn_timers, sim_data.wind_fields, sim_data.temperatures for results
+# sensor_data = sim_data.get_sensor_data_for_step(100)
+# progression = sim_data.get_fire_progression_data()

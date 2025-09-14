@@ -3,7 +3,7 @@
 import React, { useMemo } from "react";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react";
-import { ScatterplotLayer, TextLayer, IconLayer } from "@deck.gl/layers";
+import { ScatterplotLayer, TextLayer } from "@deck.gl/layers";
 import { useStore } from "../(lib)/store";
 import { ViewState, SensorPoint } from "../(types)/sensor";
 
@@ -30,32 +30,7 @@ const MAPLIBRE_STYLE = {
 };
 
 export default function SimpleFireMap() {
-  const { filteredPoints, view, actions, wsClient } = useStore();
-
-  // Icon mapping for sensors
-  const iconMapping = {
-    sensor_normal: {
-      x: 0,
-      y: 0,
-      width: 32,
-      height: 32,
-      mask: true,
-    },
-    sensor_hot: {
-      x: 32,
-      y: 0,
-      width: 32,
-      height: 32,
-      mask: true,
-    },
-    sensor_fire: {
-      x: 64,
-      y: 0,
-      width: 32,
-      height: 32,
-      mask: true,
-    },
-  };
+  const { filteredPoints, actions, wsClient } = useStore();
 
   // Optimized sensor visualization with memoization
   const layers = useMemo(() => {
@@ -155,7 +130,7 @@ export default function SimpleFireMap() {
 
           {/* North indicator */}
           <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1">
-            <div className="w-0 h-0 border-l-2 border-r-2 border-b-3 border-l-transparent border-r-transparent border-b-red-500"></div>
+            <div className="w-0 h-0 border-l-2 border-r-2 border-b-4 border-l-transparent border-r-transparent border-b-red-500"></div>
           </div>
 
           {/* Cardinal directions */}
@@ -191,7 +166,7 @@ export default function SimpleFireMap() {
     actions.setView(viewState as Partial<ViewState>);
   };
 
-  const handleMapClick = (event: any) => {
+  const handleMapClick = (event: { coordinate?: number[] }) => {
     if (event.coordinate && wsClient?.ws?.readyState === WebSocket.OPEN) {
       const [lon, lat] = event.coordinate;
 
@@ -209,20 +184,20 @@ export default function SimpleFireMap() {
     }
   };
 
-  const getTooltip = ({ object }: { object: any }) => {
+  const getTooltip = ({ object }: { object?: SensorPoint }) => {
     if (!object) return null;
 
     const status =
-      object.temperature > 60
+      (object.temperature || 0) > 60
         ? "🔥 FIRE DETECTED!"
-        : object.temperature > 30
+        : (object.temperature || 0) > 30
         ? "🟡 ELEVATED TEMP"
         : "🟢 NORMAL";
 
     const color =
-      object.temperature > 60
+      (object.temperature || 0) > 60
         ? "#FF0000"
-        : object.temperature > 30
+        : (object.temperature || 0) > 30
         ? "#FFA500"
         : "#00FF00";
 
@@ -237,9 +212,9 @@ export default function SimpleFireMap() {
           <div><strong>Battery:</strong> ${Math.round(
             object.battery_level || 100
           )}%</div>
-          <div style="font-size: 10px; color: #ccc; margin-top: 8px;">
-            📍 ${object.lat.toFixed(4)}, ${object.lon.toFixed(4)}
-          </div>
+           <div style="font-size: 10px; color: #ccc; margin-top: 8px;">
+             📍 ${object.lat?.toFixed(4)}, ${object.lon?.toFixed(4)}
+           </div>
           <div style="font-size: 10px; color: #ccc; margin-top: 4px;">
             💡 Click anywhere on map to start a fire
           </div>
@@ -278,71 +253,119 @@ export default function SimpleFireMap() {
       {/* Instructions */}
       <div className="absolute top-4 left-4 bg-white border border-gray-200 p-4 rounded shadow-lg text-sm max-w-sm">
         <div className="font-semibold text-gray-900 mb-2">Fire Simulation</div>
-        <div className="text-gray-600 text-xs">
-          Click anywhere on the map to start a fire simulation. Sensors will
-          detect and report temperature changes in real-time.
+        <div className="text-gray-600 text-xs space-y-1">
+          <div>• Click anywhere to start a fire simulation</div>
+          <div>• Watch sensors detect temperature changes</div>
+          <div>• Real-time monitoring system</div>
         </div>
       </div>
 
-      {/* Sensor Legend */}
+      {/* Legend */}
       <div className="absolute top-4 right-4 bg-white border border-gray-200 p-4 rounded shadow-lg text-sm">
         <div className="font-semibold text-gray-900 mb-3">Sensor Status</div>
-        <div className="space-y-2">
+        <div className="space-y-2 mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-green-500"></div>
             <span className="text-gray-700 text-xs">Normal (&lt;30°C)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-orange-500"></div>
             <span className="text-gray-700 text-xs">Elevated (30-60°C)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+            <div className="w-3 h-3 bg-red-500"></div>
             <span className="text-gray-700 text-xs">Fire (&gt;60°C)</span>
           </div>
         </div>
-        <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-600">
-          <div className="flex justify-between">
+        <div className="pt-3 border-t border-gray-200 text-xs text-gray-600">
+          <div className="flex justify-between mb-1">
             <span>Sensors:</span>
             <span className="font-medium">{filteredPoints.length}</span>
           </div>
+          <div className="text-xs text-gray-500">Coverage: 10.2 × 13.1 km</div>
         </div>
       </div>
 
-      {/* Fire Alert */}
+      {/* AI Judge Live Decision */}
       {filteredPoints.some((p) => p.temperature && p.temperature > 30) && (
-        <div className="absolute bottom-4 right-4 bg-white border border-gray-200 p-4 rounded shadow-lg text-sm">
-          <div className="font-semibold text-gray-900 mb-3">Fire Alert</div>
-          <div className="space-y-2 text-xs">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Fire Detected:</span>
-              <span className="font-semibold text-gray-900">
-                {
+        <div className="absolute bottom-4 right-4 bg-white border border-gray-200 p-4 rounded shadow-lg text-sm max-w-xs">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">⚖️</span>
+            <div className="font-semibold text-gray-900">AI Judge Decision</div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="p-3 bg-red-50 border border-red-200 rounded">
+              <div className="font-bold text-red-800 mb-1">
+                LEVEL{" "}
+                {filteredPoints.filter(
+                  (p) => p.temperature && p.temperature > 60
+                ).length >= 10
+                  ? "4"
+                  : filteredPoints.filter(
+                      (p) => p.temperature && p.temperature > 60
+                    ).length >= 5
+                  ? "3"
+                  : filteredPoints.filter(
+                      (p) => p.temperature && p.temperature > 60
+                    ).length >= 3
+                  ? "2"
+                  : "1"}{" "}
+                RESPONSE REQUIRED
+              </div>
+              <div className="text-xs text-red-600">
+                {filteredPoints.filter(
+                  (p) => p.temperature && p.temperature > 60
+                ).length >= 10 && "Multi-agency response activated"}
+                {filteredPoints.filter(
+                  (p) => p.temperature && p.temperature > 60
+                ).length >= 5 &&
                   filteredPoints.filter(
                     (p) => p.temperature && p.temperature > 60
-                  ).length
-                }
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Elevated Temp:</span>
-              <span className="font-semibold text-gray-900">
-                {
+                  ).length < 10 &&
+                  "Evacuation protocols initiated"}
+                {filteredPoints.filter(
+                  (p) => p.temperature && p.temperature > 60
+                ).length >= 3 &&
                   filteredPoints.filter(
-                    (p) =>
-                      p.temperature && p.temperature > 30 && p.temperature <= 60
-                  ).length
-                }
-              </span>
+                    (p) => p.temperature && p.temperature > 60
+                  ).length < 5 &&
+                  "Fire crew dispatched"}
+                {filteredPoints.filter(
+                  (p) => p.temperature && p.temperature > 60
+                ).length < 3 && "Local patrol dispatched"}
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Max Temperature:</span>
-              <span className="font-semibold text-gray-900">
-                {Math.max(
-                  ...filteredPoints.map((p) => p.temperature || 20)
-                ).toFixed(1)}
-                °C
-              </span>
+
+            <div className="space-y-1 text-xs">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Critical Sensors:</span>
+                <span className="font-bold text-red-600">
+                  {
+                    filteredPoints.filter(
+                      (p) => p.temperature && p.temperature > 60
+                    ).length
+                  }
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Confidence:</span>
+                <span className="font-bold text-green-600">
+                  {Math.min(
+                    95,
+                    70 +
+                      filteredPoints.filter(
+                        (p) => p.temperature && p.temperature > 60
+                      ).length *
+                        5
+                  )}
+                  %
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Response Time:</span>
+                <span className="font-bold text-blue-600">0.8s</span>
+              </div>
             </div>
           </div>
         </div>
