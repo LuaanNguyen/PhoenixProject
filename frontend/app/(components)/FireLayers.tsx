@@ -4,6 +4,29 @@ import { ScatterplotLayer, TextLayer } from "@deck.gl/layers";
 import { SensorPoint } from "../(types)/sensor";
 import { getColorRange } from "../(lib)/color";
 
+// Local helper types to avoid using `any`
+type Hotspot = {
+  sensor_id: string;
+  lat: number;
+  lon: number;
+  temperature: number;
+  state: number;
+  risk_level: string;
+};
+
+interface TooltipObject {
+  id?: string;
+  temperature?: number;
+  pm25?: number;
+  lat?: number;
+  lon?: number;
+  state?: number;
+  risk_level?: "LOW" | "MODERATE" | "HIGH" | "CRITICAL" | "EXTREME" | string;
+  wind_speed?: number;
+  battery_level?: number;
+  sensor_id?: string;
+}
+
 interface FireLayersConfig {
   layerMode: "heatmap" | "scatter";
   data: SensorPoint[];
@@ -33,7 +56,7 @@ export function createFireLayers({
   temperatureHotspots,
 }: FireLayersConfig): Layer[] {
   // Fire state colors
-  const FIRE_STATE_COLORS = {
+  const FIRE_STATE_COLORS: Record<number, [number, number, number]> = {
     0: [139, 69, 19], // EMPTY - Brown
     1: [34, 139, 34], // VEGETATION - Forest Green
     2: [255, 69, 0], // BURNING - Orange Red
@@ -41,7 +64,7 @@ export function createFireLayers({
   };
 
   // Risk level colors
-  const RISK_COLORS = {
+  const RISK_COLORS: Record<string, [number, number, number]> = {
     LOW: [132, 153, 79], // Green
     MODERATE: [255, 231, 151], // Yellow
     HIGH: [252, 181, 59], // Orange
@@ -107,7 +130,7 @@ export function createFireLayers({
           if (temp > 50) return 15; // Small for warm
           return 10; // Minimum for ambient
         },
-        getFillColor: (d: SensorPoint) => {
+        getFillColor: (d: SensorPoint): [number, number, number] => {
           // Color based on fire state if available, otherwise temperature
           if (d.state !== undefined) {
             return (
@@ -126,7 +149,7 @@ export function createFireLayers({
           if (temp > 30) return [0, 255, 0]; // Green - normal
           return [0, 100, 255]; // Blue - cool
         },
-        getLineColor: (d: SensorPoint) => {
+        getLineColor: (d: SensorPoint): [number, number, number] => {
           // Border color based on risk level
           if (d.risk_level) {
             return (
@@ -184,7 +207,7 @@ export function createFireLayers({
       new ScatterplotLayer({
         id: "fire-center",
         data: [{ position: [centerLon, centerLat] }],
-        getPosition: (d: any) => d.position,
+        getPosition: (d: { position: [number, number] }) => d.position,
         getRadius: 100,
         getFillColor: [255, 0, 0, 100],
         getLineColor: [255, 255, 255, 200],
@@ -202,7 +225,7 @@ export function createFireLayers({
       new ScatterplotLayer({
         id: "critical-hotspots",
         data: temperatureHotspots.slice(0, 10), // Top 10 hotspots
-        getPosition: (d: any) => [d.lon, d.lat],
+        getPosition: (d: Hotspot) => [d.lon, d.lat],
         getRadius: 50,
         getFillColor: [255, 0, 0, 150],
         getLineColor: [255, 255, 0, 200],
@@ -221,8 +244,8 @@ export function createFireLayers({
       new TextLayer({
         id: "hotspot-labels",
         data: temperatureHotspots.slice(0, 5), // Top 5 labels
-        getPosition: (d: any) => [d.lon, d.lat],
-        getText: (d: any) => `🔥 ${Math.round(d.temperature)}°C`,
+        getPosition: (d: Hotspot) => [d.lon, d.lat],
+        getText: (d: Hotspot) => `🔥 ${Math.round(d.temperature)}°C`,
         getSize: 14,
         getColor: [255, 255, 255, 255],
         getAngle: 0,
@@ -241,7 +264,7 @@ export function createFireLayers({
 }
 
 // Custom tooltip for fire data
-export function getFireTooltip({ object }: { object: any }) {
+export function getFireTooltip({ object }: { object: TooltipObject | null }) {
   if (!object) return null;
 
   // Handle different layer types
