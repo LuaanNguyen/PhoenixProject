@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import Map from "react-map-gl/maplibre";
 import DeckGL from "@deck.gl/react";
+import type { PickingInfo } from "@deck.gl/core";
 import { useStore } from "../(lib)/store";
 import { ViewState } from "../(types)/sensor";
 import { createFireLayers, getFireTooltip } from "./FireLayers";
@@ -60,6 +61,11 @@ export default function SmartConeMap() {
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
   const useMapbox = !!mapboxToken;
 
+  // DeckGL expects a PickingInfo signature -> TooltipContent
+  const deckTooltip = (info: PickingInfo) => {
+    return getFireTooltip({ object: (info.object as any) ?? null });
+  };
+
   return (
     <div className="relative w-full h-full">
       <DeckGL
@@ -67,7 +73,7 @@ export default function SmartConeMap() {
         controller={true}
         layers={layers}
         onViewStateChange={handleViewStateChange}
-        getTooltip={getFireTooltip}
+        getTooltip={deckTooltip}
       >
         <Map
           mapStyle={useMapbox ? MAPBOX_STYLE : MAPLIBRE_STYLE}
