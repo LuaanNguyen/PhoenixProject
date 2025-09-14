@@ -71,13 +71,16 @@ export function simulateSmoke(
       const randomFactor = 0.8 + Math.random() * 0.4; // ±20% variation
       const currentPM25 = sensor.basePM25 + targetIncrease * randomFactor;
 
+      const tempVal = 20 + Math.random() * 15; // 20-35°C
+
       const point: SensorPoint = {
         id: sensor.id,
         lat: sensor.lat,
         lon: sensor.lon,
         pm25: Math.round(currentPM25 * 10) / 10, // Round to 1 decimal
         humidity: 45 + Math.random() * 20, // 45-65%
-        tempC: 20 + Math.random() * 15, // 20-35°C
+        tempC: tempVal,
+        temperature: tempVal,
         ts: Date.now(),
       };
 
@@ -113,13 +116,15 @@ export function generateRandomSensorBatch(
   const points: SensorPoint[] = [];
 
   for (let i = 0; i < count; i++) {
+    const tempVal = 15 + Math.random() * 20; // 15-35°C
     points.push({
       id: `sensor_${i.toString().padStart(3, "0")}`,
       lat: bounds.minLat + Math.random() * (bounds.maxLat - bounds.minLat),
       lon: bounds.minLon + Math.random() * (bounds.maxLon - bounds.minLon),
       pm25: Math.random() * 150, // 0-150 μg/m³
       humidity: 30 + Math.random() * 40, // 30-70%
-      tempC: 15 + Math.random() * 20, // 15-35°C
+      tempC: tempVal, // 15-35°C
+      temperature: tempVal,
       ts: Date.now() - Math.random() * 3600000, // Within last hour
     });
   }

@@ -230,6 +230,7 @@ export default function SimpleFireMap() {
   return (
     <div className="relative w-full h-full">
       <DeckGL
+        style={{ width: "100%", height: "100%" }}
         initialViewState={{
           longitude: -118.15,
           latitude: 34.25,
