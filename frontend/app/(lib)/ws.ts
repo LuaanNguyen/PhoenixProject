@@ -1,4 +1,4 @@
-import { SensorMessage, SensorMessageSchema } from "../(types)/sensor";
+import { FireMessage, FireMessageSchema } from "../(types)/sensor";
 
 export type ConnectionStatus =
   | "disconnected"
@@ -10,16 +10,18 @@ export interface WSClientOptions {
   url: string;
   maxReconnectAttempts?: number;
   reconnectDelay?: number;
-  onMessage?: (message: SensorMessage) => void;
+  onMessage?: (message: FireMessage) => void;
   onStatusChange?: (status: ConnectionStatus) => void;
   onError?: (error: Error) => void;
 }
 
 export class WSClient {
-  private ws: WebSocket | null = null;
+  public ws: WebSocket | null = null; // Made public for store access
+
   private options: Required<WSClientOptions>;
   private reconnectAttempts = 0;
   private reconnectTimer: NodeJS.Timeout | null = null;
+  private lastMessageTime = 0; // For throttling
   private status: ConnectionStatus = "disconnected";
   private isManuallyDisconnected = false;
 
@@ -105,8 +107,13 @@ export class WSClient {
     this.ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        const message = SensorMessageSchema.parse(data);
-        this.options.onMessage(message);
+        const message = FireMessageSchema.parse(data);
+
+        // Throttle message processing for performance (max 10fps)
+        if (!this.lastMessageTime || Date.now() - this.lastMessageTime > 100) {
+          this.options.onMessage(message);
+          this.lastMessageTime = Date.now();
+        }
       } catch (error) {
         this.handleError(new Error(`Invalid message format: ${error}`));
       }
@@ -153,14 +160,14 @@ export class WSClient {
 }
 
 /**
- * Create a WebSocket client with default configuration
+ * Create a WebSocket client for Arduino Fire Sensor Network
  */
 export function createWSClient(
-  onMessage: (message: SensorMessage) => void,
+  onMessage: (message: FireMessage) => void,
   onStatusChange?: (status: ConnectionStatus) => void,
   onError?: (error: Error) => void
 ): WSClient {
-  const url = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8787/ws";
+  const url = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8766";
 
   return new WSClient({
     url,

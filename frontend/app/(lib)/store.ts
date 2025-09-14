@@ -4,6 +4,8 @@ import {
   LayerMode,
   ViewState,
   DEFAULT_VIEW,
+  FireMessage,
+  FireSpread,
 } from "../(types)/sensor";
 import { WSClient, createWSClient, ConnectionStatus } from "./ws";
 import { simulateSmoke } from "./sim";
@@ -26,9 +28,43 @@ interface StoreState {
   // Simulation
   simulationCancel: (() => void) | null;
 
+  // Fire Simulation Data
+  fireSimulation: {
+    isInitialized: boolean;
+    totalSteps: number;
+    currentStep: number;
+    maxSteps: number;
+    isPlaying: boolean;
+    playbackSpeed: number;
+    sensorCount: number;
+    gridSize: number;
+    simulationAreaKm2: number;
+    baseCoordinates: { lat: number; lon: number };
+  };
+
+  // Fire Spread Analysis
+  fireSpread: FireSpread | null;
+  fireStatistics: {
+    activeSensors: number;
+    totalSensors: number;
+    maxTemperature: number;
+    avgTemperature: number;
+    affectedAreaM2: number;
+    spreadRateM2PerStep: number;
+    fireCenter: [number, number];
+  };
+
   // Computed
   filteredPoints: SensorPoint[];
   hotspots: SensorPoint[];
+  temperatureHotspots: Array<{
+    sensor_id: string;
+    lat: number;
+    lon: number;
+    temperature: number;
+    state: number;
+    risk_level: string;
+  }>;
 
   // Actions
   actions: {
@@ -48,9 +84,19 @@ interface StoreState {
     setView: (view: Partial<ViewState>) => void;
     recenter: () => void;
 
-    // Simulation
+    // Fire Simulation Controls
+    playFireSimulation: () => void;
+    pauseFireSimulation: () => void;
+    resetFireSimulation: () => void;
+    setFireStep: (step: number) => void;
+    setPlaybackSpeed: (speed: number) => void;
+
+    // Legacy Simulation
     simulateSmoke: () => void;
     stopSimulation: () => void;
+
+    // Fire Data Processing
+    handleFireMessage: (message: FireMessage) => void;
   };
 }
 
@@ -58,43 +104,63 @@ export const useStore = create<StoreState>((set, get) => {
   const updateFilteredPoints = () => {
     const { points, timeWindowMin } = get();
     const cutoffTime = Date.now() - timeWindowMin * 60 * 1000;
-    const filtered = points.filter((p) => p.ts >= cutoffTime);
 
-    // Get top 5 hotspots
-    const hotspots = [...filtered].sort((a, b) => b.pm25 - a.pm25).slice(0, 5);
+    // Optimized filtering - use single pass
+    const filtered = [];
+    const hotspotCandidates = [];
+
+    for (const point of points) {
+      if (point.ts >= cutoffTime) {
+        filtered.push(point);
+        if (point.pm25 && point.pm25 > 10) {
+          // Only consider significant PM2.5 values
+          hotspotCandidates.push(point);
+        }
+      }
+    }
+
+    // Get top 5 hotspots - only sort candidates, not all points
+    const hotspots = hotspotCandidates
+      .sort((a, b) => b.pm25 - a.pm25)
+      .slice(0, 5);
 
     set({ filteredPoints: filtered, hotspots });
   };
 
   const addPointsToBuffer = (newPoints: SensorPoint[]) => {
     const { points, maxPoints } = get();
-    const allPoints = [...points, ...newPoints];
 
-    // Remove duplicates by ID, keeping the latest timestamp
-    const uniquePoints = new Map<string, SensorPoint>();
-    allPoints.forEach((point) => {
-      const existing = uniquePoints.get(point.id);
+    // Optimized deduplication - use Map for faster lookups
+    const pointMap = new Map<string, SensorPoint>();
+
+    // Add existing points to map
+    for (const point of points) {
+      pointMap.set(point.id, point);
+    }
+
+    // Add/update with new points (keeping latest timestamp)
+    for (const point of newPoints) {
+      const existing = pointMap.get(point.id);
       if (!existing || point.ts > existing.ts) {
-        uniquePoints.set(point.id, point);
+        pointMap.set(point.id, point);
       }
-    });
+    }
 
-    // Convert back to array and sort by timestamp
-    const sortedPoints = Array.from(uniquePoints.values()).sort(
-      (a, b) => b.ts - a.ts
-    );
+    // Convert to array and limit size (avoid expensive sort if possible)
+    const allPoints = Array.from(pointMap.values());
+    const finalPoints =
+      allPoints.length > maxPoints
+        ? allPoints.sort((a, b) => b.ts - a.ts).slice(0, maxPoints)
+        : allPoints;
 
-    // Keep only the most recent points
-    const trimmedPoints = sortedPoints.slice(0, maxPoints);
-
-    set({ points: trimmedPoints });
+    set({ points: finalPoints });
     updateFilteredPoints();
   };
 
   return {
     // Initial state
     points: [],
-    maxPoints: 1000, // Reduced for better performance
+    maxPoints: 3000, // Increased for natural Arduino sensor network (82+ sensors)
     wsClient: null,
     wsStatus: "disconnected",
     live: false,
@@ -104,6 +170,32 @@ export const useStore = create<StoreState>((set, get) => {
     simulationCancel: null,
     filteredPoints: [],
     hotspots: [],
+    temperatureHotspots: [],
+
+    // Fire simulation state
+    fireSimulation: {
+      isInitialized: false,
+      totalSteps: 0,
+      currentStep: 0,
+      maxSteps: 0,
+      isPlaying: false,
+      playbackSpeed: 1.0,
+      sensorCount: 0,
+      gridSize: 64,
+      simulationAreaKm2: 0,
+      baseCoordinates: { lat: 38.7891, lon: -120.4234 },
+    },
+
+    fireSpread: null,
+    fireStatistics: {
+      activeSensors: 0,
+      totalSensors: 0,
+      maxTemperature: 20,
+      avgTemperature: 20,
+      affectedAreaM2: 0,
+      spreadRateM2PerStep: 0,
+      fireCenter: [32, 32],
+    },
 
     actions: {
       addPoints: (newPoints) => {
@@ -126,14 +218,10 @@ export const useStore = create<StoreState>((set, get) => {
           wsClient.connect();
           set({ live: true });
         } else {
-          // Create WebSocket client
+          // Create WebSocket client for fire simulation
           const client = createWSClient(
             (message) => {
-              if (message.type === "batch") {
-                get().actions.addPoints(message.points);
-              } else if (message.type === "delta") {
-                get().actions.addPoint(message.point);
-              }
+              get().actions.handleFireMessage(message);
             },
             (status) => {
               set({ wsStatus: status });
@@ -203,6 +291,99 @@ export const useStore = create<StoreState>((set, get) => {
         if (simulationCancel) {
           simulationCancel();
           set({ simulationCancel: null });
+        }
+      },
+
+      // Fire simulation controls
+      playFireSimulation: () => {
+        const { wsClient } = get();
+        if (wsClient && wsClient.ws?.readyState === WebSocket.OPEN) {
+          wsClient.ws.send(JSON.stringify({ type: "play" }));
+        }
+      },
+
+      pauseFireSimulation: () => {
+        const { wsClient } = get();
+        if (wsClient && wsClient.ws?.readyState === WebSocket.OPEN) {
+          wsClient.ws.send(JSON.stringify({ type: "pause" }));
+        }
+      },
+
+      resetFireSimulation: () => {
+        const { wsClient } = get();
+        if (wsClient && wsClient.ws?.readyState === WebSocket.OPEN) {
+          wsClient.ws.send(JSON.stringify({ type: "reset" }));
+        }
+      },
+
+      setFireStep: (step: number) => {
+        const { wsClient } = get();
+        if (wsClient && wsClient.ws?.readyState === WebSocket.OPEN) {
+          wsClient.ws.send(JSON.stringify({ type: "set_step", step }));
+        }
+      },
+
+      setPlaybackSpeed: (speed: number) => {
+        const { wsClient } = get();
+        if (wsClient && wsClient.ws?.readyState === WebSocket.OPEN) {
+          wsClient.ws.send(JSON.stringify({ type: "set_speed", speed }));
+        }
+      },
+
+      // Fire message handling
+      handleFireMessage: (message: FireMessage) => {
+        if (
+          message.type === "sensor_batch" &&
+          "sensors" in message &&
+          !("step" in message)
+        ) {
+          // Handle simple fire system messages
+          get().actions.addPoints(message.sensors);
+        } else if (message.type === "simulation_init") {
+          set({
+            fireSimulation: {
+              isInitialized: true,
+              totalSteps: message.data.total_steps,
+              currentStep: message.data.current_step,
+              maxSteps: message.data.total_steps,
+              isPlaying: message.data.is_playing,
+              playbackSpeed: message.data.playback_speed,
+              sensorCount: message.data.sensor_count,
+              gridSize: message.data.grid_size,
+              simulationAreaKm2: message.data.simulation_area_km2,
+              baseCoordinates: message.data.base_coordinates,
+            },
+          });
+        } else if (message.type === "sensor_batch") {
+          // Update sensor data
+          get().actions.addPoints(message.sensors);
+
+          // Update fire spread analysis
+          set({
+            fireSpread: message.spread_analysis,
+            fireStatistics: message.statistics,
+            temperatureHotspots: message.spread_analysis.hotspots,
+          });
+
+          // Update current step
+          set((state) => ({
+            fireSimulation: {
+              ...state.fireSimulation,
+              currentStep: message.step,
+            },
+          }));
+        } else if (message.type === "control_state") {
+          set((state) => ({
+            fireSimulation: {
+              ...state.fireSimulation,
+              currentStep: message.data.current_step,
+              maxSteps: message.data.max_steps,
+              isPlaying: message.data.is_playing,
+              playbackSpeed: message.data.playback_speed,
+            },
+          }));
+        } else if (message.type === "hotspots") {
+          set({ temperatureHotspots: message.data });
         }
       },
     },
