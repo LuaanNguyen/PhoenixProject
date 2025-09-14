@@ -250,48 +250,121 @@ export default function SimpleFireMap() {
         />
       </DeckGL>
 
-      {/* Instructions */}
-      <div className="absolute top-4 left-4 bg-white border border-gray-200 p-4 rounded shadow-lg text-sm max-w-sm">
-        <div className="font-semibold text-gray-900 mb-2">Fire Simulation</div>
-        <div className="text-gray-600 text-xs space-y-1">
-          <div>• Click anywhere to start a fire simulation</div>
-          <div>• Watch sensors detect temperature changes</div>
-          <div>• Real-time monitoring system</div>
+      {/* Enhanced Instructions Panel */}
+      <div className="absolute top-6 left-6 bg-white/95 backdrop-blur-sm border border-gray-200/50 p-5 rounded-xl shadow-lg text-sm max-w-sm">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center">
+            <svg
+              className="w-4 h-4 text-blue-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <div className="font-semibold text-gray-900">
+            Fire Detection System
+          </div>
+        </div>
+        <div className="text-gray-600 text-xs space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+            <span>Click anywhere to simulate fire</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+            <span>Watch real-time sensor response</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+            <span>AI analyzes temperature patterns</span>
+          </div>
         </div>
       </div>
 
-      {/* Legend */}
-      <div className="absolute top-4 right-4 bg-white border border-gray-200 p-4 rounded shadow-lg text-sm">
-        <div className="font-semibold text-gray-900 mb-3">Sensor Status</div>
-        <div className="space-y-2 mb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-green-500"></div>
-            <span className="text-gray-700 text-xs">Normal (&lt;30°C)</span>
+      {/* Enhanced Legend */}
+      <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm border border-gray-200/50 p-5 rounded-xl shadow-lg text-sm min-w-[200px]">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <svg
+              className="w-3 h-3 text-white"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-orange-500"></div>
-            <span className="text-gray-700 text-xs">Elevated (30-60°C)</span>
+          <span className="font-semibold text-gray-900">Sensor Legend</span>
+        </div>
+        <div className="space-y-3 mb-4">
+          <div className="flex items-center justify-between p-2 bg-red-50 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 bg-red-500 rounded-full shadow-sm ring-2 ring-red-200"></div>
+              <span className="text-gray-800 font-medium">Critical</span>
+            </div>
+            <span className="text-xs text-red-600 font-semibold">&gt;60°C</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-red-500"></div>
-            <span className="text-gray-700 text-xs">Fire (&gt;60°C)</span>
+          <div className="flex items-center justify-between p-2 bg-orange-50 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 bg-orange-500 rounded-full shadow-sm ring-2 ring-orange-200"></div>
+              <span className="text-gray-800 font-medium">Elevated</span>
+            </div>
+            <span className="text-xs text-orange-600 font-semibold">
+              30-60°C
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-2 bg-green-50 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 bg-green-500 rounded-full shadow-sm ring-2 ring-green-200"></div>
+              <span className="text-gray-800 font-medium">Normal</span>
+            </div>
+            <span className="text-xs text-green-600 font-semibold">
+              &lt;30°C
+            </span>
           </div>
         </div>
-        <div className="pt-3 border-t border-gray-200 text-xs text-gray-600">
-          <div className="flex justify-between mb-1">
-            <span>Sensors:</span>
-            <span className="font-medium">{filteredPoints.length}</span>
+        <div className="pt-3 border-t border-gray-200">
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="text-gray-500">Active Sensors</span>
+            <span className="font-semibold text-gray-700">
+              {filteredPoints.length}
+            </span>
           </div>
-          <div className="text-xs text-gray-500">Coverage: 10.2 × 13.1 km</div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-500">Coverage Area</span>
+            <span className="font-semibold text-gray-700">10.2 × 13.1 km</span>
+          </div>
         </div>
       </div>
 
-      {/* AI Judge Live Decision */}
+      {/* Enhanced AI Judge Live Decision */}
       {filteredPoints.some((p) => p.temperature && p.temperature > 30) && (
-        <div className="absolute bottom-4 right-4 bg-white border border-gray-200 p-4 rounded shadow-lg text-sm max-w-xs">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg">⚖️</span>
-            <div className="font-semibold text-gray-900">AI Judge Decision</div>
+        <div className="absolute bottom-6 right-6 bg-white/95 backdrop-blur-sm border border-gray-200/50 p-5 rounded-xl shadow-lg text-sm max-w-xs">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-600 rounded-lg flex items-center justify-center">
+              <svg
+                className="w-4 h-4 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="font-semibold text-gray-900">
+              AI Emergency Response
+            </div>
           </div>
 
           <div className="space-y-3">

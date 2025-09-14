@@ -34,12 +34,12 @@ export default function SimpleFirePage() {
   }, [actions]);
 
   return (
-    <main className="flex h-screen bg-gray-50 overflow-hidden">
+    <main className="flex h-screen bg-gradient-to-br from-gray-100 via-gray-50 to-white overflow-hidden">
       {/* Left Sidebar */}
       <SimpleSidebar />
 
       {/* Map Container */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative bg-gradient-to-br from-blue-50/20 to-purple-50/20">
         <SimpleFireMap />
       </div>
 

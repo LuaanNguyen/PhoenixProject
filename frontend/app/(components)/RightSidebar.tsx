@@ -18,16 +18,41 @@ export default function RightSidebar() {
   };
 
   return (
-    <div className="w-80 h-full bg-white border-l border-gray-200 flex flex-col">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-            <span className="text-lg">🎯</span>
+    <div className="w-80 h-full bg-gradient-to-b from-gray-50 to-white border-l border-gray-200 flex flex-col shadow-lg">
+      {/* Modern Analytics Header */}
+      <div className="bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700 text-white p-6 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent"></div>
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 001.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div>
+              <h2 className="text-xl font-bold bg-gradient-to-r from-white to-gray-200 bg-clip-text text-transparent">
+                Analytics Hub
+              </h2>
+              <p className="text-indigo-100 text-sm font-medium">
+                Real-time Intelligence
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-lg font-semibold">AI Judge Analytics</h2>
-            <p className="text-blue-100 text-sm">Real-time Decision Metrics</p>
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+            <div className="text-xs text-gray-200 mb-1 uppercase tracking-wider font-medium">
+              AI Decision Metrics
+            </div>
+            <div className="text-sm font-semibold text-white">
+              Live monitoring & analysis
+            </div>
           </div>
         </div>
       </div>
